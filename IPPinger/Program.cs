@@ -27,8 +27,10 @@ namespace IPPinger
 
                 while(startPoint.GreaterOrEqual(endPoint))
                 {
-                    Thread pinger = new Thread(() => PingerThread(startPoint++.IPAddress));
+                    Thread pinger = new Thread(() => PingerThread(startPoint.GetCopy().IPAddress));
                     pinger.Start();
+                    Thread.Sleep(5);
+                    startPoint.Inc();
                 }
 
                 while(ThreadCount > 0) { }
@@ -42,7 +44,7 @@ namespace IPPinger
         public static void PingerThread(IPAddress iPAddress)
         {
             ThreadCount++;
-            int retry = 3;
+            int retry = 5;
             Ping ping = new Ping();
             while (retry > 0)
             {
@@ -95,6 +97,34 @@ namespace IPPinger
             }
         }
 
+        public IPParser GetCopy()
+        {
+            return new IPParser(IPAddress);
+        }
+
+        public void Inc()
+        {
+            if (Octet4 < 255)
+            {
+                Octet4++;
+            }
+            else if (Octet3 < 255)
+            {
+                Octet4 = 0;
+                Octet3++;
+            }
+            else if (Octet2 < 255)
+            {
+                Octet3 = 0;
+                Octet2++;
+            }
+            else if (Octet1 < 255)
+            {
+                Octet2 = 0;
+                Octet1++;
+            }
+        }
+
         public bool GreaterOrEqual(IPParser iPParser)
         {
             long ip1 =
@@ -111,33 +141,5 @@ namespace IPPinger
             if (ip1 <= ip2) return true;
             else return false;
         }
-
-        #region Static Operators
-
-        public static IPParser operator ++(IPParser iPParser)
-        {
-            if (iPParser.Octet4 < 255)
-            {
-                iPParser.Octet4++;
-            }
-            else if (iPParser.Octet3 < 255)
-            {
-                iPParser.Octet4 = 0;
-                iPParser.Octet3++;
-            }
-            else if (iPParser.Octet2 < 255)
-            {
-                iPParser.Octet3 = 0;
-                iPParser.Octet2++;
-            }
-            else if (iPParser.Octet1 < 255)
-            {
-                iPParser.Octet2 = 0;
-                iPParser.Octet1++;
-            }
-            return iPParser;
-        }
-
-        #endregion
     }
 }
